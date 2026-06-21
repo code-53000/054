@@ -6,6 +6,7 @@ import { CircuitNode } from './CircuitNode';
 import { CircuitWire, PendingWire } from './CircuitWire';
 import { screenToWorld, getPinWorldPosition } from '@/utils/pin-position';
 import { getComponentDef } from '@/components-def';
+import { setExportStage } from '@/utils/export';
 import type { ComponentType } from '@/types/circuit';
 
 interface DropEvent {
@@ -51,6 +52,13 @@ export const CircuitCanvas: React.FC = () => {
     resize();
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
+  }, []);
+
+  useEffect(() => {
+    if (stageRef.current) {
+      setExportStage(stageRef.current);
+    }
+    return () => setExportStage(null);
   }, []);
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {

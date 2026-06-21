@@ -22,6 +22,9 @@ export const Toolbar: React.FC = () => {
   const wires = useCircuitStore((s) => s.wires);
   const clearAll = useCircuitStore((s) => s.clearAll);
   const loadCircuitData = useCircuitStore((s) => s.loadCircuit);
+  const currentCircuitId = useCircuitStore((s) => s.currentCircuitId);
+  const currentCircuitName = useCircuitStore((s) => s.currentCircuitName);
+  const setCurrentCircuit = useCircuitStore((s) => s.setCurrentCircuit);
 
   const [showSave, setShowSave] = useState(false);
   const [showLoad, setShowLoad] = useState(false);
@@ -37,20 +40,28 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleOpenSave = () => {
-    setCircuitName('我的电路');
+    setCircuitName(currentCircuitName);
     setShowSave(true);
   };
 
   const handleSave = async () => {
+    const now = Date.now();
     const saved: SavedCircuit = {
-      id: uuidv4(),
+      id: currentCircuitId || uuidv4(),
       name: circuitName || '未命名电路',
       components,
       wires,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      createdAt: now,
+      updatedAt: now,
     };
+    if (currentCircuitId) {
+      const existing = await loadCircuit(currentCircuitId);
+      if (existing) {
+        saved.createdAt = existing.createdAt;
+      }
+    }
     await saveCircuit(saved);
+    setCurrentCircuit(saved.id, saved.name);
     setShowSave(false);
   };
 
@@ -63,7 +74,7 @@ export const Toolbar: React.FC = () => {
   const handleLoad = async (id: string) => {
     const data = await loadCircuit(id);
     if (data) {
-      loadCircuitData(data.components, data.wires);
+      loadCircuitData(data.components, data.wires, data.id, data.name);
       setShowLoad(false);
     }
   };
@@ -77,7 +88,7 @@ export const Toolbar: React.FC = () => {
 
   const handleLoadExample = (idx: number) => {
     const example = EXAMPLE_CIRCUITS[idx];
-    loadCircuitData(example.components, example.wires);
+    loadCircuitData(example.components, example.wires, null, example.name);
     setShowExamples(false);
   };
 

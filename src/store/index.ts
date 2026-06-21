@@ -21,6 +21,8 @@ interface CircuitState {
   scale: number;
   offsetX: number;
   offsetY: number;
+  currentCircuitId: string | null;
+  currentCircuitName: string;
 
   addComponent: (type: ComponentType, x: number, y: number) => void;
   removeComponent: (id: string) => void;
@@ -40,7 +42,8 @@ interface CircuitState {
   setViewTransform: (scale: number, offsetX: number, offsetY: number) => void;
 
   clearAll: () => void;
-  loadCircuit: (components: CircuitComponent[], wires: Wire[]) => void;
+  loadCircuit: (components: CircuitComponent[], wires: Wire[], id?: string, name?: string) => void;
+  setCurrentCircuit: (id: string | null, name: string) => void;
 
   solve: () => void;
 }
@@ -63,6 +66,8 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
   scale: 1,
   offsetX: 0,
   offsetY: 0,
+  currentCircuitId: null,
+  currentCircuitName: '我的电路',
 
   addComponent: (type, x, y) => {
     const comp: CircuitComponent = {
@@ -205,18 +210,26 @@ export const useCircuitStore = create<CircuitState>((set, get) => ({
       selectedComponentId: null,
       selectedWireId: null,
       pendingWire: null,
+      currentCircuitId: null,
+      currentCircuitName: '我的电路',
     });
   },
 
-  loadCircuit: (components, wires) => {
+  loadCircuit: (components, wires, id, name) => {
     set({
       components,
       wires,
       selectedComponentId: null,
       selectedWireId: null,
       pendingWire: null,
+      currentCircuitId: id ?? null,
+      currentCircuitName: name ?? '我的电路',
     });
     get().solve();
+  },
+
+  setCurrentCircuit: (id, name) => {
+    set({ currentCircuitId: id, currentCircuitName: name });
   },
 
   solve: () => {

@@ -48,7 +48,24 @@ export const PropertyPanel: React.FC = () => {
 
   if (selectedWireId) {
     const wire = wires.find((w) => w.id === selectedWireId);
-    const current = solverResult.branchCurrents[selectedWireId] || 0;
+    let current = 0;
+    if (wire) {
+      const compIds = [wire.from.componentId, wire.to.componentId];
+      for (const cid of compIds) {
+        const c = solverResult.branchCurrents[cid];
+        if (c && c !== 0) {
+          current = c;
+          break;
+        }
+      }
+      if (current === 0) {
+        for (const cid of compIds) {
+          if (solverResult.branchCurrents[cid] !== undefined) {
+            current = solverResult.branchCurrents[cid];
+          }
+        }
+      }
+    }
     return (
       <div className="w-64 bg-slate-900/95 border-l border-slate-700 flex flex-col h-full">
         <div className="px-4 py-3 border-b border-slate-700">
